@@ -23,7 +23,7 @@ const headers = {
 
 const dataString = 'action=login&name=Saatze&geb=12.10.1997&rememberlogin=1'
 
-let cal = ical({name: 'stundenplan'})
+let cal = ical({name: 'stundenplan', timezone: 'DE'})
 let cookieJar = request.jar()
 
 let options = {
@@ -35,7 +35,7 @@ let options = {
 }
 
 function callback(error, response, body) {
-  let newCal = ical({name: 'stundenplan'})
+  let newCal = ical({name: 'stundenplan', timezone: 'DE'})
   if (!error && response.statusCode == 302) {
     request({
       url: 'http://www.stundenplan-lehmbaugruppe.de/index.html',
@@ -53,13 +53,21 @@ function callback(error, response, body) {
           let data = row.children
           let result = {}
           let [start, end] = data[0].children[0].data.split(' - ')
-          result.start = moment(`${date} ${start}`, 'DD.MM.YYYY HH:mm').toDate()
-          result.end = moment(`${date} ${end}`, 'DD.MM.YYYY HH:mm').toDate()
+          result.start = moment(`${date} ${start}`, 'DD.MM.YYYY HH:mm')
+          result.end = moment(`${date} ${end}`, 'DD.MM.YYYY HH:mm')
+	  //if(moment(`${date}`, 'DD.MM.YYYY').isDST()){
+	    //result.start.add(1, 'h')
+	    //result.end.add(1, 'h')
+	  //}
+	  result.start = result.start.toDate()
+	  result.end = result.end.toDate()
           result.summary = data[1].children[0].data
+	  result.timezone = 'DE'
           result.location = data[2].children[0].data
           return result
         })
         events.forEach(event => {
+		console.log(event)
           newCal.createEvent(event)
         })
       })
@@ -75,9 +83,11 @@ setInterval(() => {
   request(options, callback)
 }, 1000*60*60)
 let app = express()
+app.set('tz', 'DE')
 app.get('/', (req, res) => {
+	console.log(`Get Calender ${new Date()}`)
   cal.serve(res)
 })
-app.listen(3000, () => {
+app.listen(3004, () => {
   console.log('Server started')
 })
