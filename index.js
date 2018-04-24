@@ -6,6 +6,10 @@ const decoder = new StringDecoder('utf8')
 const cheerio = require('cheerio')
 const moment = require('moment')
 
+
+const loginName = process.env.NAME
+const birthDate = process.env.DATE
+
 const headers = {
   'Pragma': 'no-cache',
   'Origin': 'http://www.stundenplan-lehmbaugruppe.de',
@@ -21,7 +25,7 @@ const headers = {
   'DNT': '1'
 }
 
-const dataString = 'action=login&name=Saatze&geb=12.10.1997&rememberlogin=1'
+const dataString = `action=login&name=${loginName}&geb=${birthDate}&rememberlogin=1`
 
 let cal = ical({name: 'stundenplan', timezone: 'DE'})
 let cookieJar = request.jar()
